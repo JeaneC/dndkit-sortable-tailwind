@@ -1,7 +1,5 @@
-import { ItemFile, ItemFolder } from "./Item";
 import { ItemFolderType } from "./types";
-
-const sampleSidebar: ItemFolderType = {
+export const sampleSidebar: ItemFolderType = {
   items: [
     {
       fileType: "document",
@@ -75,13 +73,7 @@ const sampleSidebar: ItemFolderType = {
 export function NestedSortableList() {
   return (
     <ul className="menu menu-xs bg-base-200 rounded-lg max-w-xs w-full">
-      {sampleSidebar.items.map((item) => {
-        if (item.type === "folder") {
-          return <ItemFolder folder={item} key={item.id} />;
-        }
-
-        return <ItemFile item={item} key={item.id} />;
-      })}
+      {/* TODO */}
     </ul>
   );
 }
