@@ -1,7 +1,13 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Item, ItemFileType, ItemFolderType } from "../examples/types";
-import { ReactNode, useEffect, useState } from "react";
+import {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import classNames from "classnames";
 import {
   DocumentIcon,
@@ -9,7 +15,10 @@ import {
   FolderOpenIcon,
   PaperClipIcon,
   PhotoIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { digForFolderAndDoSomething } from "./utils";
+import { produce } from "immer";
 
 export function ItemFolder({
   folder,
@@ -30,13 +39,11 @@ export function ItemFolder({
     <>
       <span
         className={classNames(
-          "menu-dropdown-toggle",
+          "menu-dropdown-toggle relative group/item",
           open && "menu-dropdown-show",
           shouldClose && "bg-primary"
         )}
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
+        onClick={() => {
           setOpen(!open);
         }}
       >
@@ -46,6 +53,8 @@ export function ItemFolder({
           <FolderIcon className="inline w-4" />
         )}
         {folder.name}
+
+        <DeleteItem item={folder} isFolder />
       </span>
       {open && (
         <ul>
@@ -70,9 +79,10 @@ export function ItemFile({ item }: { item: ItemFileType }) {
   }
 
   return (
-    <a className="max-h-fit">
+    <a className="max-h-fit relative group/item">
       {icon}
       {item.name}
+      <DeleteItem item={item} />
     </a>
   );
 }
@@ -110,3 +120,40 @@ export function SortableItem({ item }: { item: Item }) {
     </>
   );
 }
+
+function DeleteItem({ item, isFolder }: { item: Item; isFolder?: boolean }) {
+  const folderContext = useContext(FolderContext);
+
+  if (!folderContext) return null;
+
+  return (
+    <div
+      className={classNames(
+        "absolute right-0 top-0 bottom-0 group-hover/item:flex hidden items-center",
+        isFolder ? "mr-6" : "mr-2"
+      )}
+    >
+      <XMarkIcon
+        className="w-4 hover:bg-primary"
+        onClick={(e) => {
+          e.stopPropagation();
+
+          folderContext.setFolder(
+            produce(folderContext.folder, (draft) => {
+              digForFolderAndDoSomething(item.id, draft, (folder) => {
+                folder.items = folder.items.filter(
+                  (folderItem) => folderItem.id !== item.id
+                );
+              });
+            })
+          );
+        }}
+      />
+    </div>
+  );
+}
+
+export const FolderContext = createContext<{
+  folder: ItemFolderType;
+  setFolder: (folder: ItemFolderType) => void;
+} | null>(null);

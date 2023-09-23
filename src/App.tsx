@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { SimpleList } from "./examples/SimpleList";
 import { SimpleNestedList } from "./examples/SimpleNestedList";
+import { SimpleNestedListWithDelete } from "./examples/SimpleNestedListWithDelete";
 
-type DemoType = "nested" | "flat";
+type DemoType = "nested" | "flat" | "nested-delete";
 
 export default function App() {
-  const [demoType, setDemoType] = useState<DemoType>("nested");
+  const [demoType, setDemoType] = useState<DemoType>("flat");
 
   return (
     <div className="p-4">
@@ -16,15 +17,22 @@ export default function App() {
       >
         <option value="flat">Flat</option>
         <option value="nested">Simple Nested</option>
+        <option value="nested-delete">Simple Nested w/ Delete</option>
       </select>
+
+      {demoType === "flat" && (
+        <ListWrapper description="Basic example of a flat list. Drag around items.">
+          <SimpleList />
+        </ListWrapper>
+      )}
       {demoType === "nested" && (
         <ListWrapper description="Nested. Drag items across folders or levels.">
           <SimpleNestedList />
         </ListWrapper>
       )}
-      {demoType === "flat" && (
-        <ListWrapper description="Basic example of a flat list.">
-          <SimpleList />
+      {demoType === "nested-delete" && (
+        <ListWrapper description="Nested. Drag items and allow items to be deleted.">
+          <SimpleNestedListWithDelete />
         </ListWrapper>
       )}
     </div>

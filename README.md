@@ -8,7 +8,7 @@ https://dndkit-sortable-tailwind.vercel.app/
 
 ## TODOS
 
-[x] Simple list
-[x] Nested list w/ simple dnd
-[x] Nested list w/ dnd supported across folders. i.e Drag files into or out of folders.
-[] Nested list with deletion
+- [x] Simple list
+- [x] Nested list w/ simple dnd
+- [x] Nested list w/ dnd supported across folders. i.e Drag files into or out of folders.
+- [x] Nested list with deletion
