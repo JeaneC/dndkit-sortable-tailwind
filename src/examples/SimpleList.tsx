@@ -71,9 +71,7 @@ export function SimpleList() {
       >
         <SortableContext items={items} strategy={verticalListSortingStrategy}>
           {items.map((item) => (
-            <SortableItem key={item.id} id={item.id}>
-              <ItemFile item={item} />
-            </SortableItem>
+            <SortableItem key={item.id} id={item.id} item={item} />
           ))}
         </SortableContext>
       </DndContext>

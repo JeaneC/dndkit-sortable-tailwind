@@ -3,27 +3,28 @@ import { useState } from "react";
 import {
   DndContext,
   closestCenter,
-  KeyboardSensor,
-  PointerSensor,
   useSensor,
   useSensors,
   DragEndEvent,
+  UniqueIdentifier,
+  MouseSensor,
+  KeyboardSensor,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { ItemFolderType } from "./types";
-import { ItemFile, SortableFolder, SortableItem } from "../common/Sortable";
+import { Item, ItemFolderType } from "./types";
+import { SortableItem } from "../common/Sortable";
+import { produce } from "immer";
 
 const sampleSidebar: ItemFolderType = {
   items: [
     {
       fileType: "document",
       id: "2",
-      name: "resume.pdf",
+      name: "2 - resume.pdf",
       type: "file",
     },
     {
@@ -34,25 +35,37 @@ const sampleSidebar: ItemFolderType = {
           type: "file",
           fileType: "general",
           id: "5",
-          name: "Project-final.psd",
+          name: "5 - Project-final.psd",
         },
         {
           type: "file",
           fileType: "general",
           id: "6",
-          name: "Project-final-2.psd",
+          name: "6 - Project-final-2.psd",
+        },
+        {
+          type: "file",
+          fileType: "general",
+          id: "7",
+          name: "7 - Project-final-3.psd",
+        },
+        {
+          fileType: "document",
+          id: "8",
+          name: "8 - resume-2.pdf",
+          type: "file",
         },
       ],
-      name: "My Files",
+      name: "3 - My Files",
     },
     {
       type: "file",
       fileType: "document",
       id: "4",
-      name: "reports-final-2.pdf",
+      name: "4 - reports-final-2.pdf",
     },
   ],
-  name: "My Files",
+  name: "1 - My Files",
   type: "folder",
   id: "1",
 };
@@ -61,7 +74,12 @@ export function NestedList() {
   const [folder, setFolder] = useState(sampleSidebar);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 0,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -69,20 +87,44 @@ export function NestedList() {
 
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    if (!over || active.id === over.id) return;
 
-    if (over && active.id !== over.id) {
-      setFolder((folder) => {
-        const oldIndex = folder.items.findIndex(
-          (item) => item.id === active.id
-        );
-        const newIndex = folder.items.findIndex((item) => item.id === over.id);
+    // Edge case: Make sure over is not inside active
+    let isOverInsideActive = false;
+    const activeFolder = folder.items.find((item) => item.id === active.id);
 
-        return {
-          ...folder,
-          items: arrayMove(folder.items, oldIndex, newIndex),
-        };
+    if (activeFolder && activeFolder.type === "folder") {
+      digForFolderAndDoSomething(over.id, activeFolder, () => {
+        isOverInsideActive = true;
       });
+
+      if (isOverInsideActive) return;
     }
+
+    const newFolder = produce(folder, (draft) => {
+      let removedItem: Item | undefined;
+      digForFolderAndDoSomething(active.id, draft, (folder) => {
+        folder.items = folder.items.filter((item) => {
+          if (item.id === active.id) {
+            removedItem = item;
+            return false;
+          }
+          return true;
+        });
+      });
+
+      digForFolderAndDoSomething(over.id, draft, (folder) => {
+        const overIndex = folder.items.findIndex(
+          (item) => item.id === over.id
+        )!;
+
+        if (removedItem) {
+          folder.items.splice(overIndex, 0, removedItem);
+        }
+      });
+    });
+
+    setFolder(newFolder);
   };
 
   return (
@@ -97,32 +139,26 @@ export function NestedList() {
           strategy={verticalListSortingStrategy}
         >
           {folder.items.map((item) => {
-            return (
-              <SortableItem key={item.id} id={item.id}>
-                {item.type === "folder" ? (
-                  <SortableFolder
-                    folder={item}
-                    setFolder={(newFolder) => {
-                      setFolder({
-                        ...folder,
-                        items: folder.items.map((item) => {
-                          if (item.id === newFolder.id) {
-                            return newFolder;
-                          }
-
-                          return item;
-                        }),
-                      });
-                    }}
-                  />
-                ) : (
-                  <ItemFile item={item} />
-                )}
-              </SortableItem>
-            );
+            return <SortableItem key={item.id} item={item} />;
           })}
         </SortableContext>
       </DndContext>
     </ul>
   );
+}
+
+function digForFolderAndDoSomething(
+  itemId: UniqueIdentifier,
+  folder: ItemFolderType,
+  action: (folder: ItemFolderType) => void
+) {
+  for (const item of folder.items) {
+    if (item.id === itemId) {
+      action(folder);
+      break;
+    }
+    if (item.type === "folder") {
+      digForFolderAndDoSomething(itemId, item, action);
+    }
+  }
 }
