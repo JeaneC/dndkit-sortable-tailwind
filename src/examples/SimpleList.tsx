@@ -16,7 +16,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { ItemFileType } from "./types";
-import { ItemFile, SortableItem } from "../common/Sortable";
+import { SortableItem } from "../common/Sortable";
 
 const sampleSidebar: ItemFileType[] = [
   {
@@ -71,7 +71,7 @@ export function SimpleList() {
       >
         <SortableContext items={items} strategy={verticalListSortingStrategy}>
           {items.map((item) => (
-            <SortableItem key={item.id} id={item.id} item={item} />
+            <SortableItem key={item.id} item={item} />
           ))}
         </SortableContext>
       </DndContext>

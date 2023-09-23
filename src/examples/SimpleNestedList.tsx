@@ -6,7 +6,6 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
-  UniqueIdentifier,
   MouseSensor,
   KeyboardSensor,
 } from "@dnd-kit/core";
@@ -18,13 +17,14 @@ import {
 import { Item, ItemFolderType } from "./types";
 import { SortableItem } from "../common/Sortable";
 import { produce } from "immer";
+import { digForFolderAndDoSomething } from "../common/utils";
 
-const sampleSidebar: ItemFolderType = {
+export const sampleSidebar: ItemFolderType = {
   items: [
     {
       fileType: "document",
       id: "2",
-      name: "2 - resume.pdf",
+      name: " 2- resume.pdf",
       type: "file",
     },
     {
@@ -44,16 +44,36 @@ const sampleSidebar: ItemFolderType = {
           name: "6 - Project-final-2.psd",
         },
         {
-          type: "file",
-          fileType: "general",
+          type: "folder",
           id: "7",
-          name: "7 - Project-final-3.psd",
-        },
-        {
-          fileType: "document",
-          id: "8",
-          name: "8 - resume-2.pdf",
-          type: "file",
+          name: "7 - Images",
+          items: [
+            {
+              type: "file",
+              fileType: "image",
+              id: "8",
+              name: "8 - Screenshot1.png",
+            },
+            {
+              type: "file",
+              fileType: "image",
+              id: "9",
+              name: "9 - Screenshot2.png",
+            },
+            {
+              type: "folder",
+              id: "10",
+              name: "10 - Others",
+              items: [
+                {
+                  type: "file",
+                  fileType: "image",
+                  id: "11",
+                  name: "11 - Screenshot3.png",
+                },
+              ],
+            },
+          ],
         },
       ],
       name: "3 - My Files",
@@ -70,14 +90,13 @@ const sampleSidebar: ItemFolderType = {
   id: "1",
 };
 
-export function NestedList() {
+export function SimpleNestedList() {
   const [folder, setFolder] = useState(sampleSidebar);
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
       activationConstraint: {
-        delay: 200,
-        tolerance: 0,
+        distance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -119,7 +138,13 @@ export function NestedList() {
         )!;
 
         if (removedItem) {
-          folder.items.splice(overIndex, 0, removedItem);
+          const newItem = folder.items[overIndex];
+
+          if (newItem?.type === "folder") {
+            newItem.items = [removedItem, ...newItem.items];
+          } else {
+            folder.items.splice(overIndex, 0, removedItem);
+          }
         }
       });
     });
@@ -145,20 +170,4 @@ export function NestedList() {
       </DndContext>
     </ul>
   );
-}
-
-function digForFolderAndDoSomething(
-  itemId: UniqueIdentifier,
-  folder: ItemFolderType,
-  action: (folder: ItemFolderType) => void
-) {
-  for (const item of folder.items) {
-    if (item.id === itemId) {
-      action(folder);
-      break;
-    }
-    if (item.type === "folder") {
-      digForFolderAndDoSomething(itemId, item, action);
-    }
-  }
 }

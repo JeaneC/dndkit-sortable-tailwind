@@ -18,7 +18,7 @@ export function ItemFolder({
   folder: ItemFolderType;
   shouldClose?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   useEffect(() => {
     if (shouldClose && open) {
@@ -93,18 +93,20 @@ export function SortableItem({ item }: { item: Item }) {
   };
 
   return (
-    <li
-      className={classNames(isOver && " z-10  border-t-2 border-accent")}
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-    >
-      {item.type === "folder" ? (
-        <ItemFolder folder={item} key={item.id} shouldClose={isDragging} />
-      ) : (
-        <ItemFile item={item} key={item.id} />
-      )}
-    </li>
+    <>
+      <li
+        className={classNames(isOver && "z-20  border-t-2 border-accent")}
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+      >
+        {item.type === "folder" ? (
+          <ItemFolder folder={item} key={item.id} shouldClose={isDragging} />
+        ) : (
+          <ItemFile item={item} key={item.id} />
+        )}
+      </li>
+    </>
   );
 }

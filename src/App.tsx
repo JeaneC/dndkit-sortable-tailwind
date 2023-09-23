@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SimpleList } from "./examples/SimpleList";
-import { NestedList } from "./examples/NestedList";
+import { SimpleNestedList } from "./examples/SimpleNestedList";
 
 type DemoType = "nested" | "flat";
 
@@ -18,8 +18,8 @@ export default function App() {
         <option value="nested">Simple Nested</option>
       </select>
       {demoType === "nested" && (
-        <ListWrapper description="Nested, items can only be dragged if they are in the same level.">
-          <NestedList />
+        <ListWrapper description="Nested. Drag items across folders or levels.">
+          <SimpleNestedList />
         </ListWrapper>
       )}
       {demoType === "flat" && (
