@@ -6,7 +6,7 @@ export interface ItemBase {
 export interface ItemFileType extends ItemBase {
   type: "file";
   fileType: "general" | "image" | "document";
-  parentId?: string;
+  parentId?: string | null;
   name: string;
 }
 
@@ -16,3 +16,9 @@ export interface ItemFolderType extends ItemBase {
 }
 
 export type Item = ItemFileType | ItemFolderType;
+
+export type FlattenedItem = Item & {
+  parentId: string | null;
+  depth: number;
+  index: number;
+};
